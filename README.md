@@ -4,6 +4,8 @@ A small, unofficial iOS app that opens x.com full screen and injects [Control Pa
 
 The app supports iOS 17 and later and has been used on iOS 26. The current target is **iPhone-only**; native iPad layouts have not been implemented or verified. This project is not affiliated with X.
 
+**Starting with Linux, a fresh Mac/Hackintosh, and a free Apple Account?** Follow [Free account first, paid later](docs/FREE-TO-PAID.md). It covers first-time Xcode setup, phone trust, Linux deployment, and the later signing transition.
+
 ## What it changes
 
 - Hides ads and Control Panel's default upsells/recommendation clutter, while retaining For you, inline retweets/quote tweets, counts, views, and the existing blue-check appearance.
