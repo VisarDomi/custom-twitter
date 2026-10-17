@@ -1,0 +1,9 @@
+{
+  "host": "ios-build",
+  "remoteRoot": "/Users/YOUR_MAC_USER/Developer/custom-twitter",
+  "bundleId": "com.yourname.CustomTwitter",
+  "team": "YOUR_TEAM_ID",
+  "device": "YOUR_DEVICE_UDID",
+  "minimumProfileDays": 1,
+  "iosTools": null
+}

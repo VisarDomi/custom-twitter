@@ -1,0 +1,14 @@
+build/
+*.local.json
+.DS_Store
+__pycache__/
+*.pyc
+xcuserdata/
+project.xcworkspace/
+*.ipa
+*.mobileprovision
+*.p12
+*.p8
+*.key
+*.pem
+Config/Local.xcconfig

@@ -1,0 +1,3 @@
+// Public defaults. Override privately in Local.xcconfig or with xcodebuild arguments.
+PRODUCT_BUNDLE_IDENTIFIER = com.example.CustomTwitter
+#include? "Local.xcconfig"
