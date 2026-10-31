@@ -40,7 +40,7 @@ def build(generic=False):
         raise RuntimeError('Vendored Control Panel settings contract changed; review WebController.swift first')
     with signing_lock():
         subprocess.run([
-            'xcodebuild', '-project', 'Twitter.xcodeproj', '-scheme', 'Twitter',
+            'xcodebuild', '-jobs', '2', '-project', 'Twitter.xcodeproj', '-scheme', 'Twitter',
             '-configuration', 'Release', '-sdk', 'iphoneos',
             '-destination', 'generic/platform=iOS' if generic else 'platform=iOS,id=' + values['device'],
             '-destination-timeout', '30',

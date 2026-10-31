@@ -121,6 +121,8 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
 
     override func loadView() {
         let configuration = WKWebViewConfiguration()
+        // Allow pinch zoom even when the site restricts viewport scaling.
+        configuration.ignoresViewportScaleLimits = true
         configuration.applicationNameForUserAgent = "Version/26.0 Mobile/15E148 Safari/604.1"
         configuration.allowsInlineMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = []

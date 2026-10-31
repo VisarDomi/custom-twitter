@@ -80,9 +80,13 @@ user = pwd.getpwuid(os.getuid()).pw_name
 console = pwd.getpwuid(os.stat('/dev/console').st_uid).pw_name
 if user != console: raise SystemExit('Log into the Mac desktop as the SSH build user first')
 (root / 'build').mkdir(exist_ok=True)
+runner = ['/usr/bin/python3', str(root / 'scripts/build.py')]
+tools = {self.tools!r}
+if tools:
+    runner = ['/usr/bin/python3', tools + '/native/scripts/mac-workload', 'build', '--timeout', '900', '--'] + runner
 command = ['sudo', '-n', 'launchctl', 'asuser', str(os.getuid()),
            'sudo', '-n', '-H', '-u', user, '/usr/bin/caffeinate', '-i',
-           '/usr/bin/python3', str(root / 'scripts/build.py')]
+           ] + runner
 with (root / 'build/xcode.log').open('w') as log:
     result = subprocess.run(command, cwd=root, stdout=log, stderr=subprocess.STDOUT)
 if result.returncode:
