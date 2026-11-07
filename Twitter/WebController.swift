@@ -114,7 +114,6 @@ enum BottomBar {
 final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
     private var webView: WKWebView!
     private var popup: UIViewController?
-    private var historyPreviews: HistoryPreviews!
     private var startupCover: UIView?
 
     // Like the other apps: no status bar, so the top edge belongs to the page (iOS kept taps there for
@@ -143,7 +142,7 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
         controller.addUserScript(WKUserScript(source: BottomBar.script, injectionTime: .atDocumentEnd,
                                               forMainFrameOnly: true, in: .defaultClient))
 
-        let browser = HistoryPreviewWebView(frame: .zero, configuration: configuration)
+        let browser = BlackHistoryWebView(frame: .zero, configuration: configuration)
         webView = browser
         webView.isOpaque = true
         webView.backgroundColor = .black
@@ -159,8 +158,6 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
 
         // Edge to edge: x.com sets viewport-fit=cover and pads its own header and tab bar with
         // env(safe-area-inset-*), so the page scrolls under the notch and the home indicator.
-        historyPreviews = HistoryPreviews(webView, session: Self.session)
-        browser.preview = { [weak self] back in self?.historyPreviews.image(back: back) }
         let root = UIView()
         root.backgroundColor = .black
         root.addSubview(webView)
@@ -203,6 +200,8 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Retire the former image cache; WebKit's history/session data stays intact.
+        try? FileManager.default.removeItem(at: Self.session.appendingPathExtension("previews"))
         // Set only the display preference before the first network request.
         // Authentication cookies and the persistent store remain owned by WebKit.
         let cookies = webView.configuration.websiteDataStore.httpCookieStore
@@ -220,7 +219,6 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
     private func restorePage() {
         guard let state = try? Data(contentsOf: Self.session) else { webView.load(URLRequest(url: Site.home)); return }
         webView.interactionState = state
-        historyPreviews.restore(matching: state)
         // An old restore point can reopen a blank page without any navigation callback.
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
             guard let self, !webView.isLoading, !Site.matches(webView.url, Site.ownHosts) else { return }
@@ -229,16 +227,10 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
     }
 
     func saveSession() {
-        persistSession()
-        historyPreviews?.captureForCheckpoint { [weak self] in self?.persistSession() }
-    }
-
-    private func persistSession() {
         guard Site.matches(webView?.url, Site.ownHosts), let state = webView?.interactionState as? Data else { return }
         do {
             try FileManager.default.createDirectory(at: Self.session.deletingLastPathComponent(), withIntermediateDirectories: true)
             try state.write(to: Self.session, options: .atomic)
-            historyPreviews.save(matching: state)
         } catch { print("WebKit session checkpoint:", error) }
     }
 
@@ -264,7 +256,6 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         if webView == self.webView {
             revealPage()
-            historyPreviews.didFinish()
         }
     }
 

@@ -49,58 +49,35 @@ qualified. Job `20261107T044830Z-defb659ce3` installed source `d3584de` in place
 approved it for renewal on 2026-11-07. That is the version before the black-theme
 change, including the previously tested rotation and zoom support.
 
-## Swipe previews
+## Black swipe transitions
 
-WebKit serializes the page/history state separately from its in-memory gesture
-images. A history destination restored after process exit can therefore have no
-image, and WebKit creates a white fallback surface for that swipe.
+At the owner's request, build 4 replaces history preview images with solid black.
+`BlackHistoryWebView` clears the transient `SwipeSnapshot` layer's contents and
+sets its background to opaque black, including when WebKit has a native image.
+The hook runs on native view insertion/layout and leaves gesture recognition,
+cancellation, completion and destination-page rendering with WebKit.
 
-`HistoryPreviews` keeps up to eight compressed viewport images in the app's private
-Application Support directory. A sidecar records the exact interaction-state bytes,
-history URLs and image positions. A mismatched/corrupt sidecar is ignored; the original
-interaction-state file retains its format. State and sidecar writes are atomic, and
-an interruption between them safely drops the stale preview set.
+The former viewport capture, JPEG encoding, image cache and image checkpoint
+code are removed. On startup the app deletes only the obsolete
+`interaction-state.previews` sidecar. The original WebKit interaction-state file,
+login store and Control Panel preferences retain their existing mechanisms.
+The startup cover and fixed Lights Out styling remain in place.
 
-Captures follow navigation, scrolling/zooming and background checkpoints, with
-coalescing and bounded image dimensions. There is no preview polling timer. A small
-web-view subclass handles WebKit's transient layer named `SwipeSnapshot`: it preserves
-WebKit's own image, supplies a matching cached image when absent, and uses black for
-an uncached destination. Native gesture recognition, completion and cancellation
-remain owned by WebKit. The layer name is a WebKit implementation detail, so native
-gesture checks are required for future OS updates.
+The transient layer name is a WebKit implementation detail. Verify native
+back/forward drags after future OS changes, including restored history.
 
-Capture requests skip active touch/scroll/zoom and history transitions. Cached images
-fit within the gesture surface after orientation changes, with black around them.
+The build-4 native fixture passed with zero failures on 2026-11-07. All six
+rendered drag surfaces had no image contents and an opaque black background:
+back/forward between documents, same-document history and both directions after
+reopening. Canceled drags, completed navigation and session restoration were
+checked. A seeded obsolete preview file was removed while an unrelated app-data
+sentinel was preserved. The seven standard deployment checks also passed.
+Private evidence is in `~/.local/state/custom-twitter-black-swipes/20261107/`.
+Diagnostic apps were uninstalled and the shared guest/owned GUI shut down.
 
-### Qualified repair
-
-The 2026-11-07 native fixture passed with zero test failures. It recorded twelve
-rendered drag frames: back/forward between documents, same-document history, and
-both directions after separate process exits. The control disabled preview capture
-and fallback handling; its restored destinations had no native image and a white
-surface. Both repaired restored frames contained the matching saved image on black.
-Warm native images were retained. The final sidecar matched the exact saved state
-and held three images for the three-entry fixture history.
-
-Canceled preview drags and subsequent completed gestures were checked separately.
-One control-only forward gesture needed the fixture's public WebKit navigation
-fallback; none of the repaired paths used it. Page setup used public WebKit calls
-because simulator accessibility link taps proved unreliable. Diagnostic frame
-capture ran inside the fixture, and readiness checks waited for loading and prior
-transitions to settle. These hooks are absent from production.
-
-The initial response was held back to inspect the empty canvas; the native startup
-cover stayed black. The site-style rewrite/replacement DOM checks and seven standard
-deployment checks passed. The temporary diagnostic apps were uninstalled, and the
-shared guest/owned GUI were closed. Private source, logs, captures and cleanup
-receipts are under `~/.local/state/custom-twitter-startup/20261107/gestures/`.
-
-The repaired build was delivered on 2026-11-07 by job
-`20261107T062323Z-234ab8defa`, source `00575e1` (build 3). Its signed device build
-and in-place installation succeeded, and the queue confirmed `installed` with
-renewal approval. The product was not launched or uninstalled during delivery.
-Older history without a stored image uses black while loading; previews are
-retained as pages are visited with this build.
+The prior image-preview build was installed in place on 2026-11-07 by job
+`20261107T062323Z-234ab8defa`, source `00575e1` (build 3), with renewal approval.
+Its implementation and qualification history are retained in Git.
 
 Apple API references:
 - https://developer.apple.com/documentation/bundleresources/information-property-list/uilaunchscreen/uicolorname

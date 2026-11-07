@@ -9,7 +9,7 @@
   C00000000000000000000000 = {isa = PBXBuildFile; fileRef = B00000000000000000000000;};
   B00000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Twitter/WebController.swift; sourceTree = "<group>";};
   C00000000000000000000001 = {isa = PBXBuildFile; fileRef = B00000000000000000000001;};
-  B00000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Twitter/HistoryPreviews.swift; sourceTree = "<group>";};
+  B00000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Twitter/BlackHistoryWebView.swift; sourceTree = "<group>";};
   C00000000000000000000003 = {isa = PBXBuildFile; fileRef = B00000000000000000000003;};
   D00000000000000000000000 = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Resources/Assets.xcassets; sourceTree = "<group>";};
   E00000000000000000000000 = {isa = PBXBuildFile; fileRef = D00000000000000000000000;};
@@ -29,8 +29,8 @@
   A0000000000000000000000B = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (C00000000000000000000000, C00000000000000000000001, C00000000000000000000003); runOnlyForDeploymentPostprocessing = 0;};
   A0000000000000000000000C = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;};
   A0000000000000000000000D = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (E00000000000000000000000, E00000000000000000000001, E00000000000000000000002); runOnlyForDeploymentPostprocessing = 0;};
-  A0000000000000000000000F = {isa = XCBuildConfiguration; baseConfigurationReference = B00000000000000000000002; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 3; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Resources/Info.plist; MARKETING_VERSION = 1.0; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; TARGETED_DEVICE_FAMILY = 1;}; name = Debug;};
-  A00000000000000000000010 = {isa = XCBuildConfiguration; baseConfigurationReference = B00000000000000000000002; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 3; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Resources/Info.plist; MARKETING_VERSION = 1.0; PRODUCT_NAME = "$(TARGET_NAME)"; TARGETED_DEVICE_FAMILY = 1;}; name = Release;};
+  A0000000000000000000000F = {isa = XCBuildConfiguration; baseConfigurationReference = B00000000000000000000002; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 4; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Resources/Info.plist; MARKETING_VERSION = 1.0; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; TARGETED_DEVICE_FAMILY = 1;}; name = Debug;};
+  A00000000000000000000010 = {isa = XCBuildConfiguration; baseConfigurationReference = B00000000000000000000002; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 4; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Resources/Info.plist; MARKETING_VERSION = 1.0; PRODUCT_NAME = "$(TARGET_NAME)"; TARGETED_DEVICE_FAMILY = 1;}; name = Release;};
  };
  rootObject = A00000000000000000000001;
 }
