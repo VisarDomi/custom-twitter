@@ -32,6 +32,11 @@ and external sign-in scope. The standard deployment-policy suite and native comp
 pass. The app is registered with the existing `ios-push twitter` queue for in-place
 installation and persistent renewal approval; product UI is not driven during delivery.
 
+Delivered on 2026-11-07 through `ios-push` job
+`20261107T035227Z-68a340fb41`, using source `67e287b` (build 2). The queue confirmed
+`installed`: installed in place and approved for renewal. The signed device build
+succeeded; the product was not launched or uninstalled during delivery.
+
 Apple API references:
 - https://developer.apple.com/documentation/bundleresources/information-property-list/uilaunchscreen/uicolorname
 - https://developer.apple.com/documentation/webkit/wkwebview/underpagebackgroundcolor
