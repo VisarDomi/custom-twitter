@@ -95,6 +95,13 @@ deployment checks passed. The temporary diagnostic apps were uninstalled, and th
 shared guest/owned GUI were closed. Private source, logs, captures and cleanup
 receipts are under `~/.local/state/custom-twitter-startup/20261107/gestures/`.
 
+The repaired build was delivered on 2026-11-07 by job
+`20261107T062323Z-234ab8defa`, source `00575e1` (build 3). Its signed device build
+and in-place installation succeeded, and the queue confirmed `installed` with
+renewal approval. The product was not launched or uninstalled during delivery.
+Older history without a stored image uses black while loading; previews are
+retained as pages are visited with this build.
+
 Apple API references:
 - https://developer.apple.com/documentation/bundleresources/information-property-list/uilaunchscreen/uicolorname
 - https://developer.apple.com/documentation/webkit/wkwebview/underpagebackgroundcolor
