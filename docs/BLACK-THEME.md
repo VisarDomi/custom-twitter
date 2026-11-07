@@ -75,6 +75,11 @@ sentinel was preserved. The seven standard deployment checks also passed.
 Private evidence is in `~/.local/state/custom-twitter-black-swipes/20261107/`.
 Diagnostic apps were uninstalled and the shared guest/owned GUI shut down.
 
+Delivered on 2026-11-07 by job `20261107T065322Z-139e2a4ed0`, source `84dc872`
+(build 4). The signed device build succeeded and the queue confirmed in-place
+installation and renewal approval. The product was not launched or uninstalled
+during delivery.
+
 The prior image-preview build was installed in place on 2026-11-07 by job
 `20261107T062323Z-234ab8defa`, source `00575e1` (build 3), with renewal approval.
 Its implementation and qualification history are retained in Git.
