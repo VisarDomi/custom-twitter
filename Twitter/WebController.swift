@@ -50,6 +50,7 @@ enum ControlPanel {
         if let stored = UserDefaults.standard.dictionary(forKey: storedKey) {
             config.merge(stored) { _, new in new }
         }
+        config["darkModeTheme"] = "lightsOut"
         let json = String(data: try! JSONSerialization.data(withJSONObject: config), encoding: .utf8)!
         return script.replacingOccurrences(of: settingsRead, with: "Object.assign(config, \(json))\nlet $settings = null")
     }
@@ -128,6 +129,9 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
         configuration.mediaTypesRequiringUserActionForPlayback = []
         let relayWorld = WKContentWorld.world(name: "cpft-relay")
         let controller = configuration.userContentController
+        let blackTheme = try! String(contentsOf: Bundle.main.url(forResource: "black-theme", withExtension: "js")!, encoding: .utf8)
+        controller.addUserScript(WKUserScript(source: blackTheme, injectionTime: .atDocumentStart,
+                                              forMainFrameOnly: true, in: .defaultClient))
         controller.addUserScript(WKUserScript(source: ControlPanel.source(), injectionTime: .atDocumentStart,
                                               forMainFrameOnly: true, in: .page))
         controller.addUserScript(WKUserScript(source: ControlPanel.relay, injectionTime: .atDocumentStart,
@@ -137,6 +141,10 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
                                               forMainFrameOnly: true, in: .defaultClient))
 
         webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.isOpaque = false
+        webView.backgroundColor = .black
+        webView.scrollView.backgroundColor = .black
+        webView.underPageBackgroundColor = .black
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.allowsBackForwardNavigationGestures = true
@@ -167,6 +175,21 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Set only the display preference before the first network request.
+        // Authentication cookies and the persistent store remain owned by WebKit.
+        let cookies = webView.configuration.websiteDataStore.httpCookieStore
+        let group = DispatchGroup()
+        for domain in [".x.com", ".twitter.com"] {
+            if let cookie = HTTPCookie(properties: [.name: "night_mode", .value: "2", .domain: domain,
+                                                   .path: "/", .secure: "TRUE", .expires: Date().addingTimeInterval(31_536_000)]) {
+                group.enter()
+                cookies.setCookie(cookie) { group.leave() }
+            }
+        }
+        group.notify(queue: .main) { [weak self] in self?.restorePage() }
+    }
+
+    private func restorePage() {
         guard let state = try? Data(contentsOf: Self.session) else { webView.load(URLRequest(url: Site.home)); return }
         webView.interactionState = state
         // An old restore point can reopen a blank page without any navigation callback.
@@ -230,6 +253,10 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
         }
         // Sign-in popups need window.opener, so they get a real child web view.
         let child = WKWebView(frame: .zero, configuration: configuration)
+        child.isOpaque = false
+        child.backgroundColor = .black
+        child.scrollView.backgroundColor = .black
+        child.underPageBackgroundColor = .black
         child.navigationDelegate = self
         child.uiDelegate = self
         let host = UIViewController()
