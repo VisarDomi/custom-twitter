@@ -9,6 +9,7 @@ The app supports iOS 17 and later and has been used on iOS 26. The current targe
 ## What it changes
 
 - Uses a fixed pure-black Lights Out theme, including the iOS launch screen and WebKit loading surfaces.
+- Keeps recent page previews for back/forward swipes after reopening the app; uncached history uses a black loading surface.
 - Hides ads and Control Panel's default upsells/recommendation clutter, while retaining For you, inline retweets/quote tweets, counts, views, and the existing blue-check appearance.
 - Hides the header, bottom navigation, and floating compose button together while scrolling down; restores them while scrolling up. Hides the new-posts pill above the timeline.
 - Uses the whole screen with no native navigation bars. Supports pull to refresh and WebKit back/forward gestures.

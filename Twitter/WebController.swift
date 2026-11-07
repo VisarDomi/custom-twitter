@@ -114,6 +114,8 @@ enum BottomBar {
 final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
     private var webView: WKWebView!
     private var popup: UIViewController?
+    private var historyPreviews: HistoryPreviews!
+    private var startupCover: UIView?
 
     // Like the other apps: no status bar, so the top edge belongs to the page (iOS kept taps there for
     // scroll-to-top, so buttons under it, such as compose's Post, couldn't be tapped).
@@ -129,6 +131,7 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
         configuration.mediaTypesRequiringUserActionForPlayback = []
         let relayWorld = WKContentWorld.world(name: "cpft-relay")
         let controller = configuration.userContentController
+        controller.add(self, contentWorld: .defaultClient, name: "appearanceReady")
         let blackTheme = try! String(contentsOf: Bundle.main.url(forResource: "black-theme", withExtension: "js")!, encoding: .utf8)
         controller.addUserScript(WKUserScript(source: blackTheme, injectionTime: .atDocumentStart,
                                               forMainFrameOnly: true, in: .defaultClient))
@@ -140,8 +143,9 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
         controller.addUserScript(WKUserScript(source: BottomBar.script, injectionTime: .atDocumentEnd,
                                               forMainFrameOnly: true, in: .defaultClient))
 
-        webView = WKWebView(frame: .zero, configuration: configuration)
-        webView.isOpaque = false
+        let browser = HistoryPreviewWebView(frame: .zero, configuration: configuration)
+        webView = browser
+        webView.isOpaque = true
         webView.backgroundColor = .black
         webView.scrollView.backgroundColor = .black
         webView.underPageBackgroundColor = .black
@@ -155,6 +159,8 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
 
         // Edge to edge: x.com sets viewport-fit=cover and pads its own header and tab bar with
         // env(safe-area-inset-*), so the page scrolls under the notch and the home indicator.
+        historyPreviews = HistoryPreviews(webView, session: Self.session)
+        browser.preview = { [weak self] back in self?.historyPreviews.image(back: back) }
         let root = UIView()
         root.backgroundColor = .black
         root.addSubview(webView)
@@ -165,7 +171,29 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
             webView.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: root.trailingAnchor),
         ])
+        showStartupCover(in: root)
         view = root
+    }
+
+    private func showStartupCover(in root: UIView) {
+        guard startupCover == nil else { return }
+        let cover = UIView()
+        cover.backgroundColor = .black
+        cover.isUserInteractionEnabled = false
+        cover.translatesAutoresizingMaskIntoConstraints = false
+        root.addSubview(cover)
+        NSLayoutConstraint.activate([
+            cover.topAnchor.constraint(equalTo: root.topAnchor),
+            cover.bottomAnchor.constraint(equalTo: root.bottomAnchor),
+            cover.leadingAnchor.constraint(equalTo: root.leadingAnchor),
+            cover.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+        ])
+        startupCover = cover
+    }
+
+    private func revealPage() {
+        startupCover?.removeFromSuperview()
+        startupCover = nil
     }
 
     // Like a restored Safari tab: a relaunch after iOS ended the app reopens the page you were on,
@@ -192,6 +220,7 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
     private func restorePage() {
         guard let state = try? Data(contentsOf: Self.session) else { webView.load(URLRequest(url: Site.home)); return }
         webView.interactionState = state
+        historyPreviews.restore(matching: state)
         // An old restore point can reopen a blank page without any navigation callback.
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
             guard let self, !webView.isLoading, !Site.matches(webView.url, Site.ownHosts) else { return }
@@ -200,10 +229,16 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
     }
 
     func saveSession() {
+        persistSession()
+        historyPreviews?.captureForCheckpoint { [weak self] in self?.persistSession() }
+    }
+
+    private func persistSession() {
         guard Site.matches(webView?.url, Site.ownHosts), let state = webView?.interactionState as? Data else { return }
         do {
             try FileManager.default.createDirectory(at: Self.session.deletingLastPathComponent(), withIntermediateDirectories: true)
             try state.write(to: Self.session, options: .atomic)
+            historyPreviews.save(matching: state)
         } catch { print("WebKit session checkpoint:", error) }
     }
 
@@ -213,6 +248,10 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
     }
 
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
+        if message.name == "appearanceReady" {
+            if message.frameInfo.isMainFrame && message.webView == webView { revealPage() }
+            return
+        }
         guard let text = message.body as? String,
               let changes = try? JSONSerialization.jsonObject(with: Data(text.utf8)) as? [String: Any] else { return }
         var stored = UserDefaults.standard.dictionary(forKey: ControlPanel.storedKey) ?? [:]
@@ -221,6 +260,13 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
     }
 
     // MARK: Navigation
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        if webView == self.webView {
+            revealPage()
+            historyPreviews.didFinish()
+        }
+    }
 
     func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
@@ -253,7 +299,7 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
         }
         // Sign-in popups need window.opener, so they get a real child web view.
         let child = WKWebView(frame: .zero, configuration: configuration)
-        child.isOpaque = false
+        child.isOpaque = true
         child.backgroundColor = .black
         child.scrollView.backgroundColor = .black
         child.underPageBackgroundColor = .black
@@ -274,6 +320,7 @@ final class WebController: UIViewController, WKNavigationDelegate, WKUIDelegate,
     }
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        if webView == self.webView { showStartupCover(in: view) }
         webView.reload()
     }
 

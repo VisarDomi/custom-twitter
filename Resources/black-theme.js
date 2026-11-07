@@ -20,6 +20,14 @@
     body { color: #e7e9ea !important; }
   `
   let body
+  let announced = false
+  const announceAppearance = () => {
+    if (announced || !document.body) return
+    announced = true
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      window.webkit?.messageHandlers?.appearanceReady?.postMessage(true)
+    }))
+  }
   const bodyObserver = new MutationObserver(() => enforce())
   const enforce = () => {
     if (document.documentElement && !style.isConnected) (document.head || document.documentElement).append(style)
@@ -31,6 +39,7 @@
     if (body && (body.style.backgroundColor !== 'rgb(0, 0, 0)' || body.style.getPropertyPriority('background-color') !== 'important')) {
       body.style.setProperty('background-color', '#000', 'important')
     }
+    announceAppearance()
     if (!document.cookie.split(';').some(c => c.trim() === 'night_mode=2')) {
       document.cookie = `night_mode=2; Domain=.${domain}; Path=/; Max-Age=31536000; SameSite=Lax; Secure`
     }
